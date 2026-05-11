@@ -2,13 +2,17 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
-import { FileText, Plus } from "lucide-react"
+import { FileText, Plus, User2 } from "lucide-react"
 
 interface Note {
     id: number;
@@ -21,21 +25,21 @@ interface AppSidebarProps {
     notes: Note[];
     onSelectNote: (note: Note) => void;
     selectedNoteId?: number;
+    onAddNote: () => void;
 }
 
-export function AppSidebar({ notes, onSelectNote, selectedNoteId }: AppSidebarProps) {
+export function AppSidebar({ notes, onSelectNote, selectedNoteId, onAddNote }: AppSidebarProps) {
     return (
         <Sidebar>
-            <SidebarContent className="bg-slate-50">
+            <SidebarHeader>
+                <span className="font-bold text-lg px-2">mono-log</span>
+            </SidebarHeader>
+            <SidebarContent>
                 <SidebarGroup>
-                    <div className="flex items-center justify-between px-2 mb-4 mt-2">
-                        <SidebarGroupLabel className="text-lg font-bold text-slate-900">
-                            Private
-                        </SidebarGroupLabel>
-                        <button className="p-1 hover:bg-slate-200 rounded text-slate-500">
-                            <Plus className="w-4 h-4" />
-                        </button>
-                    </div>
+                    <SidebarGroupLabel>Note</SidebarGroupLabel>
+                    <SidebarGroupAction title="Add Note" onClick={onAddNote}>
+                        <Plus className="w-4 h-4" />
+                    </SidebarGroupAction>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {notes.map((note) => (
@@ -46,8 +50,8 @@ export function AppSidebar({ notes, onSelectNote, selectedNoteId }: AppSidebarPr
                                       onClick={() => onSelectNote(note)}
                                     >
                                         <button className="flex items-center gap-2 w-full text-left">
-                                            <FileText/>
-                                            <span></span>
+                                            <FileText />
+                                            <span className="truncate font-medium">{note.title || "Untitled"}</span>
                                         </button>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -56,6 +60,16 @@ export function AppSidebar({ notes, onSelectNote, selectedNoteId }: AppSidebarPr
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarFooter>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton>
+                            <User2 />
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
+            <SidebarRail />
         </Sidebar>
     )
 }
