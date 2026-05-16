@@ -41,7 +41,21 @@ function App() {
         setSelectedNote(newNote);
       })
       .catch((err) => console.error(err));
-  }
+  };
+
+  const handleUpdateNote = (updated: Note) => {
+    fetch(`http://localhost:8005/api/notepapers/${updated.id}/`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: updated.title, content: updated.content }),
+    })
+      .then((res) => res.json())
+      .then((saved) => {
+        setNotes((prev) => prev.map((n) => (n.id === saved.id ? saved : n)));
+        setSelectedNote(saved);
+      })
+      .catch((err) => console.error(err));
+  };
 
   return (
     <SidebarProvider>
@@ -68,13 +82,19 @@ function App() {
                   <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold uppercase">
                     {selectedNote.category}
                   </span>
-                  <h1 className="text-4xl font-bold mt-4 text-slate-900 leading-tight">
-                    {selectedNote.title || "Untitled"}
-                  </h1>
+                  <input
+                    className="block w-full text-4xl font-bold mt-4 text-slate-900 leading-tight bg-transparent outline-none border-b border-transparent focus:border-slate-300"
+                    value={selectedNote.title}
+                    onChange={(e) => setSelectedNote({ ...selectedNote, title: e.target.value })}
+                    onBlur={() => handleUpdateNote(selectedNote)}
+                  />
                 </div>
-                <div className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {selectedNote.content || "No content"}
-                </div>
+                <textarea
+                  className="w-full text-lg text-slate-700 leading-relaxed bg-transparent outline-none resize-none min-h-[60vh]"
+                  value={selectedNote.content}
+                  onChange={(e) => setSelectedNote({ ...selectedNote, content: e.target.value })}
+                  onBlur={() => handleUpdateNote(selectedNote)}
+                />
               </article>
               ) : (
                 <div className="h-full flex items-center justify-center text-slate-400">
