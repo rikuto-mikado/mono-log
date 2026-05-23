@@ -57,6 +57,20 @@ function App() {
       .catch((err) => console.error(err));
   };
 
+  const handleDeleteNote = (id: number) => {
+    fetch(`http://localhost:8005/api/notepapers/${id}/`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then(() => {
+        setNotes((prev) => prev.filter((n) => n.id !== id));
+        if (selectedNote?.id === id) {
+          setSelectedNote(null);
+        }
+      })
+      .catch((err) => console.error(err));
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -64,6 +78,7 @@ function App() {
         onSelectNote={setSelectedNote}
         selectedNoteId={selectedNote?.id} 
         onAddNote={handleAddNote}
+        onDeleteNote={handleDeleteNote}
       />
 
       <SidebarInset>
