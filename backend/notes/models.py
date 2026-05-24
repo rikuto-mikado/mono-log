@@ -11,6 +11,8 @@ class NotePaper(models.Model):
     links = models.ManyToManyField(
         "self", symmetrical=False, related_name="backlinks", blank=True
     )
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title or "Untitled Note"
