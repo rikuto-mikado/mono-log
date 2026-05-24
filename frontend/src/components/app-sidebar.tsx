@@ -27,20 +27,50 @@ interface AppSidebarProps {
     selectedNoteId?: number;
     onAddNote: () => void;
     onDeleteNote: (id: number) => void;
+    currentView: 'notes' | 'trash';
+    onViewChange: (view: 'notes' | 'trash') => void;
 }
 
-export function AppSidebar({ notes, onSelectNote, selectedNoteId, onAddNote, onDeleteNote }: AppSidebarProps) {
+export function AppSidebar({
+    notes,
+    onSelectNote,
+    selectedNoteId,
+    onAddNote,
+    onDeleteNote,
+    currentView,
+    onViewChange 
+}: AppSidebarProps) {
     return (
         <Sidebar>
             <SidebarHeader>
                 <span className="font-bold text-lg px-2">mono-log</span>
             </SidebarHeader>
             <SidebarContent>
+
                 <SidebarGroup>
-                    <SidebarGroupLabel>Note</SidebarGroupLabel>
-                    <SidebarGroupAction title="Add Note" onClick={onAddNote}>
-                        <Plus className="w-4 h-4" />
-                    </SidebarGroupAction>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton isActive={currentView === 'notes'} onClick={() => onViewChange('notes')}>
+                                <FileText className="w-4 h-4" />
+                                <span>All Notes</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton isActive={currentView === 'trash'} onClick={() => onViewChange('trash')}>
+                                <Trash2 className="w-4 h-4" />
+                                <span>Trash</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+
+                <SidebarGroup>
+                    <SidebarGroupLabel>{currentView === 'notes' ? 'Notes' : 'Trash'}</SidebarGroupLabel>
+                    {currentView === 'notes' && (
+                        <SidebarGroupAction title="Add Note" onClick={onAddNote}>
+                            <Plus className="w-4 h-4" />
+                        </SidebarGroupAction>
+                    )}
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {notes.map((note) => (

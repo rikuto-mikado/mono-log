@@ -16,32 +16,43 @@ interface Note {
 function App() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [currentView, setCurrentView] = useState<'notes' | 'trash'>('notes');
+
+  const fetchNotes = (view: 'notes' | 'trash') => {
+    const url = view === 'notes'
+      ? "http://localhost:8005/api/notepapers/"
+      : "http://localhost:8005/api/notepapers/trash/";
+    
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => setNotes(data));
+  }
 
   useEffect(() => {
-    fetch("http://localhost:8005/api/notepapers/")
-      .then((res) => res.json())
-      .then((data) => {
-        setNotes(data)
-        if (data.length > 0) {
-          setSelectedNote(data[0]);
-        }
-      })
-      .catch((err) => console.error(err));
-  }, []);
-
+    fetchNotes(currentView);
+  }, [currentView]);
   const handleAddNote = () => {
-    fetch("http://localhost:8005/api/notepapers/", {
+    fetch(`http://localhost:8005/api/notepapers/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "New Note", content: "", category: "general" }),
+      body: JSON.stringify({ title: "New Note", content: "", category: "General" }),
     })
       .then((res) => res.json())
       .then((newNote) => {
-        setNotes((prev) => [...prev, newNote]);
+        setNotes((prev) => [newNote, ...prev]);
         setSelectedNote(newNote);
-      })
-      .catch((err) => console.error(err));
+      });
   };
+
+  const handleRestoreNote = (id: number) => {
+    fetch(`http://localhost:8005/api/notepapers/${id}/restore/`, {
+      method: "POST",
+    })
+      .then(() => {
+        fetchNotes(currentView);
+        setSelectedNote(null);
+      });
+  }
 
   const handleUpdateNote = (updated: Note) => {
     fetch(`http://localhost:8005/api/notepapers/${updated.id}/`, {
@@ -58,17 +69,20 @@ function App() {
   };
 
   const handleDeleteNote = (id: number) => {
-    fetch(`http://localhost:8005/api/notepapers/${id}/`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    })
+    const isTrash = currentView === 'trash';
+    const url = isTrash
+      ? `http://localhost:8005/api/notepapers/${id}/permanent/`
+      : `http://localhost:8005/api/notepapers/${id}/`;
+    
+    fetch(url,
+      {
+        method: "DELETE",
+      }
+    )
       .then(() => {
         setNotes((prev) => prev.filter((n) => n.id !== id));
-        if (selectedNote?.id === id) {
-          setSelectedNote(null);
-        }
-      })
-      .catch((err) => console.error(err));
+        if (selectedNote?.id === id) setSelectedNote(null);
+      });
   }
 
   return (
@@ -79,6 +93,8 @@ function App() {
         selectedNoteId={selectedNote?.id} 
         onAddNote={handleAddNote}
         onDeleteNote={handleDeleteNote}
+        currentView={currentView}
+        onViewChange={setCurrentView}
       />
 
       <SidebarInset>
@@ -87,6 +103,14 @@ function App() {
           <h1 className="ml-4 font-semibold text-slate-400">
             My Workspace / <span className="text-slate-900 font-medium">{selectedNote?.title}</span>
           </h1>
+          {currentView === 'trash' && selectedNote && (
+            <button
+              onClick={() => handleRestoreNote(selectedNote.id)}
+              className="ml-auto px-3 py-1 rounded bg-green-100 text-green-700 text-sm font-medium"
+            >
+              Restore
+            </button>
+          )}
         </header>
 
         <div className="flex-1 overflow-auto p-8">
@@ -109,6 +133,7 @@ function App() {
                   value={selectedNote.content}
                   onChange={(e) => setSelectedNote({ ...selectedNote, content: e.target.value })}
                   onBlur={() => handleUpdateNote(selectedNote)}
+                  disabled={currentView === 'trash'}
                 />
               </article>
               ) : (

@@ -13,6 +13,8 @@ class NotePaperViewSet(viewsets.ModelViewSet):
     serializer_class = NotePaperSerializer
 
     def get_queryset(self):
+        if self.action == "trash":
+            return NotePaper.objects.filter(is_deleted=True).order_by("-deleted_at")
         return NotePaper.objects.filter(is_deleted=False).order_by("-updated_at")
 
     def destroy(self, request, *args, **kwargs):
@@ -22,14 +24,14 @@ class NotePaperViewSet(viewsets.ModelViewSet):
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["get"])
-    def trashList(self, request, pk=None):
-        queryset = NotePaper.objects.filter(is_deleted=True).order_by("-deleted_at")
+    @action(detail=False, methods=["get"])
+    def trash(self, request, pk=None):
+        queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
-    def restoreNoteFromTrash(self, request, pk=None):
+    def restore(self, request, pk=None):
         instance = NotePaper.objects.get(pk=pk)
         instance.is_deleted = False
         instance.deleted_at = None
@@ -37,7 +39,7 @@ class NotePaperViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(instance).data)
 
     @action(detail=True, methods=["delete"])
-    def deleteNotePermanently(self, request, pk=None):
+    def permanent(self, request, pk=None):
         instance = NotePaper.objects.get(pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
