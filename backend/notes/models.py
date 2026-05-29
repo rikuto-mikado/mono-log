@@ -13,6 +13,7 @@ class NotePaper(models.Model):
     )
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
+    category = models.CharField(max_length=50, blank=True, default="None")
 
     def __str__(self):
         return self.title or "Untitled Note"

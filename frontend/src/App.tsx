@@ -4,7 +4,12 @@ import {
   SidebarInset, 
   SidebarTrigger
 } from "@/components/ui/sidebar";
+import {
+  NativeSelect, NativeSelectOption
+} from "@/components/ui/native-select";
 import { AppSidebar } from "@/components/app-sidebar";
+
+const CATEGORIES = ["None", "Study", "Diaries", "Work", "Ideas"];
 
 interface Note {
   id: number;
@@ -35,7 +40,7 @@ function App() {
     fetch(`http://localhost:8005/api/notepapers/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "New Note", content: "", category: "General" }),
+      body: JSON.stringify({ title: "New Note", content: "", category: "None" }),
     })
       .then((res) => res.json())
       .then((newNote) => {
@@ -58,7 +63,11 @@ function App() {
     fetch(`http://localhost:8005/api/notepapers/${updated.id}/`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: updated.title, content: updated.content }),
+      body: JSON.stringify({
+        title: updated.title,
+        content: updated.content,
+        category: updated.category
+      }),
     })
       .then((res) => res.json())
       .then((saved) => {
@@ -100,8 +109,8 @@ function App() {
       <SidebarInset>
         <header className="flex h-12 items-center border-b px-4 bg-white shrink-0">
           <SidebarTrigger />
-          <h1 className="ml-4 font-semibold text-slate-400">
-            My Workspace / <span className="text-slate-900 font-medium">{selectedNote?.title}</span>
+          <h1 className="ml-4 font-semibold text-orange-300">
+            My Workspace <span className="text-slate-900 font-medium">/ {selectedNote?.title}</span>
           </h1>
           {currentView === 'trash' && selectedNote && (
             <button
@@ -118,9 +127,25 @@ function App() {
             {selectedNote ? (
               <article>
                 <div className="mb-8">
-                  <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold uppercase">
+                  {/* <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold uppercase">
                     {selectedNote.category}
-                  </span>
+                  </span> */}
+                  <div className="mb-4">
+                    <NativeSelect
+                      value={selectedNote.category}
+                      onChange={(e) => {
+                        const updated = { ...selectedNote, category: e.target.value };
+                        setSelectedNote(updated);
+                        handleUpdateNote(updated);
+                      }}
+                    >
+                      {CATEGORIES.map((cat) => (
+                        <NativeSelectOption key={cat} value={cat}>
+                          {cat}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                  </div>
                   <input
                     className="block w-full text-4xl font-bold mt-4 text-slate-900 leading-tight bg-transparent outline-none border-b border-transparent focus:border-slate-300"
                     value={selectedNote.title}
